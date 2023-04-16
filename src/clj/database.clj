@@ -4,26 +4,58 @@
 
 (defonce node (xt/start-node {}))
 
-(s/def ::name string?)
-(s/def ::type string?)
-(s/def ::stability string?)
-(s/def ::manufacturer string?)
-
-(s/def ::data (s/keys :req-un [::name ::type ::stability ::manufacturer]))
-
-(defn put-seed-instance 
-  "This entity describes a single specific instance
-   of a seed, as purchased from a manufacturer"
-  [data] 
-  (when-not (s/valid? ::data data)
-    (throw (Exception. "not valid"))) 
+(defn- put-data
+  [data spec]
+  (when-not (s/valid? spec data)
+    (throw (ex-info "not valid" (s/explain-data spec data))))
   (let [uuid (.toString (java.util.UUID/randomUUID))]
-    (xt/submit-tx node 
+    (xt/submit-tx node
                   [[::xt/put (merge {:xt/id uuid}
                                     data)]])
     (xt/sync node)
     uuid))
 
+(s/def ::name string?)
+(s/def ::type string?)
+(s/def ::stability string?)
+(s/def ::manufacturer string?)
+
+(s/def ::seed-instance (s/keys :req-un [::name ::type ::stability ::manufacturer]))
+
+(defn put-seed-instance 
+  "This entity describes a single specific instance
+   of a seed, as purchased from a manufacturer"
+  [data] 
+  (put-data data ::seed-instance))
+
 (defn get-seed-instance-by-id [id]
   (xt/entity (xt/db node) id))
 
+(s/def ::seed-instance-id string?)
+(s/def ::amount int?)
+(s/def ::seeding-date string?) ;; TODO convert to date
+
+(s/def ::group-of-plants (s/keys :req-un 
+                                 [::seed-instance-id
+                                  ::seeding-date
+                                  ::amount]))
+
+(defn put-group-of-plants
+  "A group of plants grown from a specific seed instance
+   at a given seeding date"
+  [data]
+  (put-data data ::group-of-plants))
+
+(defn get-group-of-plants-by-id [id]
+  (xt/entity (xt/db node) id))
+
+(comment
+  (def seed-instance-1 {:name "Sweet million"
+                        :type "Tomate"
+                        :stability "F1"
+                        :manufacturer "abc"})
+  (def seed-instance-id (put-seed-instance seed-instance-1))
+  (def group-of-plants-1 {:seed-instance-id seed-instance-id
+                          :seeding-date "2023-05-05"
+                          :amount 5})
+  (def group-of-plants-1-id (put-group-of-plants group-of-plants-1)))
