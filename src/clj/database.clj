@@ -11,7 +11,10 @@
 
 (s/def ::data (s/keys :req-un [::name ::type ::stability ::manufacturer]))
 
-(defn put-seed-instance [data] 
+(defn put-seed-instance 
+  "This entity describes a single specific instance
+   of a seed, as purchased from a manufacturer"
+  [data] 
   (when-not (s/valid? ::data data)
     (throw (Exception. "not valid"))) 
   (let [uuid (.toString (java.util.UUID/randomUUID))]
