@@ -1,6 +1,4 @@
-# Tracker
-
-An issue tracking system.
+# Anbauplaner
 
 ## Getting started
 
