@@ -6,8 +6,8 @@
 
 (defn- put-data
   [data spec]
-  (when-not (s/valid? spec data)
-    (throw (ex-info "not valid" (s/explain-data spec data))))
+  (when-not (s/valid? spec (dissoc data :object/type))
+    (throw (ex-info "not valid" (s/explain-data spec (dissoc data :object/type)))))
   (let [uuid (.toString (java.util.UUID/randomUUID))]
     (xt/submit-tx node
                   [[::xt/put (merge {:xt/id uuid}
@@ -40,7 +40,7 @@
   (let [existing-seed-instance (find-existing-seed-instance data)]
     (if (seq existing-seed-instance)
       (ffirst existing-seed-instance)
-      (put-data data ::seed-instance))))
+      (put-data (assoc data :object/type :seed-instance) ::seed-instance))))
 
 (defn get-data-by-id [id]
   (xt/entity (xt/db node) id))
@@ -58,7 +58,7 @@
   "A group of plants grown from a specific seed instance
    at a given seeding date"
   [data]
-  (put-data data ::group-of-plants))
+  (put-data (assoc data :object/type :group-of-plants) ::group-of-plants))
 
 (s/def ::name string?)
 (s/def ::x-begin int?)
@@ -68,7 +68,7 @@
 
 (defn put-bed-area
   [data]
-  (put-data data ::bed-area))
+  (put-data (assoc data :object/type :bed-area) ::bed-area))
 
 (s/def ::group-of-plants-id string?)
 (s/def ::bed-area-id string?)
@@ -87,7 +87,7 @@
                                     ::succession-number]))
 (defn put-plan-item
   [data]
-  (put-data data ::plan-item))
+  (put-data (assoc data :object/type :plan-item) ::plan-item))
 
 (comment
   
@@ -111,7 +111,7 @@
                       :planned-seeding-date "2023-01-02"
                       :planned-planting-date "2023-05-08"
                       :planned-harvesting-date "2023-09-18"
-                      :succession-number 1})
+                      :succession-number 1}) 
     (def plan-item-1-id (put-plan-item plan-item-1))
     (get-data-by-id plan-item-1-id))
 
