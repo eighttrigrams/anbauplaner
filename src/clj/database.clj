@@ -95,17 +95,20 @@
    
    (fn [[id
          planned-seeding-date
-         bed-area-id]]
+         bed-area-id
+         name]]
      {:planned-seeding-date planned-seeding-date
       :id id
-      :bed-area-id bed-area-id})
+      :bed-area/id bed-area-id
+      :bed-area/name name})
    
-   (xt/q (xt/db node) '{:find  [?e planned-seeding-date ?eb]
+   (xt/q (xt/db node) '{:find  [?e planned-seeding-date ?eb name]
                         :where [[?e :object/type :plan-item]
                                 [?e :planned-seeding-date planned-seeding-date]
                                 [?e :bed-area-id bed-area-id]
 
-                                [?eb :xt/id bed-area-id]]})))
+                                [?eb :xt/id bed-area-id]
+                                [?eb :name name]]})))
 
 (comment
   
