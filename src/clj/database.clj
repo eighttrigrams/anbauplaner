@@ -63,6 +63,16 @@
 (defn get-group-of-plants-by-id [id]
   (xt/entity (xt/db node) id))
 
+(s/def ::name string?)
+(s/def ::x-begin int?)
+(s/def ::x-end int?)
+
+(s/def ::bed-area (s/keys :req-un [::name ::x-begin ::x-end]))
+
+(defn put-bed-area
+  [data]
+  (put-data data ::bed-area))
+
 (comment
   (def seed-instance-1 {:name "Sweet million"
                         :type "Tomate"
