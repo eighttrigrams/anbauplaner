@@ -22,11 +22,25 @@
 
 (s/def ::seed-instance (s/keys :req-un [::name ::type ::stability ::manufacturer]))
 
+(defn find-existing-seed-instance
+  [{:keys [name type stability manufacturer]}]
+  (xt/q (xt/db node)
+        '{:find  [seed-instance]
+          :where [[seed-instance :name name]
+                  [seed-instance :type type]
+                  [seed-instance :stability stability]
+                  [seed-instance :manufacturer manufacturer]]
+          :in [name type stability manufacturer]}
+        name type stability manufacturer))
+
 (defn put-seed-instance 
   "This entity describes a single specific instance
    of a seed, as purchased from a manufacturer"
   [data] 
-  (put-data data ::seed-instance))
+  (let [existing-seed-instance (find-existing-seed-instance data)]
+    (if (seq existing-seed-instance)
+      (ffirst existing-seed-instance)
+      (put-data data ::seed-instance))))
 
 (defn get-seed-instance-by-id [id]
   (xt/entity (xt/db node) id))
