@@ -90,14 +90,33 @@
   (put-data data ::plan-item))
 
 (comment
-  (def seed-instance-1 {:name "Sweet million"
-                        :type "Tomate"
-                        :sxtability "F1"
-                        :manufacturer "abc"})
-  (def seed-instance-id (put-seed-instance seed-instance-1))
-  (def group-of-plants-1 {:seed-instance-id seed-instance-id
-                          :seeding-date "2023-05-05"
-                          :amount 5})
-  (def group-of-plants-1-id (put-group-of-plants group-of-plants-1))
-  (def bed-area-1 {:name "Beet1" :x-begin 0 :x-end 1})
-  (def bed-area-1-id (put-bed-area bed-area-1)))
+  
+  ;; demo use case
+
+  (do
+    (def node (xt/start-node {}))
+    (def seed-instance-1 {:name "Atlanta"
+                          :type "Porree"
+                          :stability ""
+                          :manufacturer "Dürr"})
+    (def seed-instance-1-id (put-seed-instance seed-instance-1))
+    (def group-of-plants-1 {:seed-instance-id seed-instance-1-id
+                            :seeding-date "2023-05-05"
+                            :amount 5})
+    (def group-of-plants-1-id (put-group-of-plants group-of-plants-1))
+    (def bed-area-1 {:name "Beet1" :x-begin 0 :x-end 1})
+    (def bed-area-1-id (put-bed-area bed-area-1))
+    (def plan-item-1 {:group-of-plants-id group-of-plants-1-id
+                      :bed-area-id bed-area-1-id
+                      :planned-seeding-date "2023-01-02"
+                      :planned-planting-date "2023-05-08"
+                      :planned-harvesting-date "2023-09-18"
+                      :succession-number 1})
+    (def plan-item-1-id (put-plan-item plan-item-1))
+    (get-data-by-id plan-item-1-id))
+
+  ;; demo use case end
+
+  (get-data-by-id seed-instance-id)
+
+  )
