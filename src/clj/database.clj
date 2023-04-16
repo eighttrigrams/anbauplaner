@@ -89,8 +89,22 @@
   [data]
   (put-data (assoc data :object/type :plan-item) ::plan-item))
 
+(defn find-all-plan-items
+  []
+  (map
+   
+   (fn [[id planned-seeding-date]]
+     {:planned-seeding-date planned-seeding-date
+      :id id})
+   
+   (xt/q (xt/db node) '{:find  [?e planned-seeding-date]
+                        :where [[?e :object/type :plan-item]
+                                [?e :planned-seeding-date planned-seeding-date]]})))
+
 (comment
   
+  (find-all-plan-items)
+
   ;; demo use case
 
   (do
