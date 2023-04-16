@@ -16,4 +16,6 @@
           nil))
 
 ;; TODO implement
-(defn list-resources [{}])
+(defn list-resources []
+  (prn "list-resources")
+  {:a :b})
