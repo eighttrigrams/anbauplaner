@@ -70,6 +70,25 @@
   [data]
   (put-data data ::bed-area))
 
+(s/def ::group-of-plants-id string?)
+(s/def ::bed-area-id string?)
+(s/def ::planned-seeding-date string?) ;; TODO convert to dates
+(s/def ::planned-planting-date string?)
+(s/def ::planned-harvesting-date string?)
+(s/def ::succession-number int?) 
+
+;; per season
+(s/def ::plan-item (s/keys :req-un [::group-of-plants-id
+                                    ::bed-area-id
+                                    ::planned-seeding-date
+                                    ::planned-planting-date
+                                    ::planned-harvesting-date
+                                    ;; can possibly be calculated based upon planting date
+                                    ::succession-number]))
+(defn put-plan-item
+  [data]
+  (put-data data ::plan-item))
+
 (comment
   (def seed-instance-1 {:name "Sweet million"
                         :type "Tomate"
