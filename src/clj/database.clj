@@ -73,10 +73,12 @@
 (comment
   (def seed-instance-1 {:name "Sweet million"
                         :type "Tomate"
-                        :stability "F1"
+                        :sxtability "F1"
                         :manufacturer "abc"})
   (def seed-instance-id (put-seed-instance seed-instance-1))
   (def group-of-plants-1 {:seed-instance-id seed-instance-id
                           :seeding-date "2023-05-05"
                           :amount 5})
-  (def group-of-plants-1-id (put-group-of-plants group-of-plants-1)))
+  (def group-of-plants-1-id (put-group-of-plants group-of-plants-1))
+  (def bed-area-1 {:name "Beet1" :x-begin 0 :x-end 1})
+  (def bed-area-1-id (put-bed-area bed-area-1)))
