@@ -42,7 +42,7 @@
       (ffirst existing-seed-instance)
       (put-data data ::seed-instance))))
 
-(defn get-seed-instance-by-id [id]
+(defn get-data-by-id [id]
   (xt/entity (xt/db node) id))
 
 (s/def ::seed-instance-id string?)
@@ -59,9 +59,6 @@
    at a given seeding date"
   [data]
   (put-data data ::group-of-plants))
-
-(defn get-group-of-plants-by-id [id]
-  (xt/entity (xt/db node) id))
 
 (s/def ::name string?)
 (s/def ::x-begin int?)
