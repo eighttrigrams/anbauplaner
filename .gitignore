@@ -1,0 +1,13 @@
+.lsp
+.clj-kondo
+!.clj-kondo/config.edn
+.calva
+.cpcache    
+.nrepl-port
+node_modules
+resources/public/js/cljs-runtime
+.shadow-cljs
+resources/public/js/main.js
+resources/public/js/manifest.edn
+server.jar
+config.edn
