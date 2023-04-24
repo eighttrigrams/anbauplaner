@@ -1,7 +1,7 @@
 (ns database
   (:require [clojure.spec.alpha :as s]
             [xtdb.api :as xt]
-            [model :refer :all]))
+            model))
 
 (defonce node (xt/start-node {}))
 
@@ -99,7 +99,7 @@
     (def seed-instance-1-id (put-data seed-instance-1 
                                       :seed-instance/spec 
                                       :seed-instance))
-    (def group-of-plants-1 {:seed-instance-id seed-instance-1-id
+    (def group-of-plants-1 {:relation/seed-instance-id seed-instance-1-id
                             :seeding-date "2023-05-05"
                             :amount 5})
     (def group-of-plants-1-id (put-data group-of-plants-1
@@ -111,7 +111,7 @@
     (def bed-area-1-id (put-data bed-area-1
                                  :bed-area/spec
                                  :bed-area))
-    (def plan-item-1 {:group-of-plants-id group-of-plants-1-id
+    (def plan-item-1 {:relation/group-of-plants-id group-of-plants-1-id
                       :bed-area-id bed-area-1-id
                       :planned-seeding-date "2023-01-02"
                       :planned-planting-date "2023-05-08"

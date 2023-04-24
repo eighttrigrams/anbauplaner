@@ -13,14 +13,14 @@
                                          :seed-instance/stability
                                          :seed-instance/manufacturer]))
 
-(s/def :group-of-plants/seed-instance-id string?)
+(s/def :relation/seed-instance-id string?)
 (s/def :group-of-plants/amount int?)
 (s/def :group-of-plants/seeding-date string?) ;; TODO convert to date
 
 ;; A group of plants grown from a specific seed instance
 ;; at a given seeding date
 (s/def :group-of-plants/spec (s/keys :req
-                                     [:group-of-plants/seed-instance-id
+                                     [:relation/seed-instance-id
                                       :group-of-plants/seeding-date
                                       :group-of-plants/amount]))
 
@@ -32,7 +32,7 @@
                                     :bed-area/x-begin 
                                     :bed-area/x-end]))
 
-(s/def :plan-item/group-of-plants-id string?)
+(s/def :relation/group-of-plants-id string?)
 (s/def :plan-item/bed-area-id string?)
 (s/def :plan-item/planned-seeding-date string?) ;; TODO convert to dates
 (s/def :plan-item/planned-planting-date string?)
@@ -40,7 +40,7 @@
 (s/def :plan-item/succession-number int?)
 
 ;; per season
-(s/def :plan-item/spec (s/keys :req [:plan-item/group-of-plants-id
+(s/def :plan-item/spec (s/keys :req [:relation/group-of-plants-id
                                      :plan-item/bed-area-id
                                      :plan-item/planned-seeding-date
                                      :plan-item/planned-planting-date
