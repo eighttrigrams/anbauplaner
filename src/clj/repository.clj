@@ -60,40 +60,13 @@
 (defn get-data-by-id [id]
   (xt/entity (xt/db node) id))
 
-(defn- un-namespace-keys
-  [m]
-  (into {}
-        (map (fn [[k v]]
-               [(keyword (name k)) v])
-             m)))
-
-(defn find-all-plan-items
-  []
-  (map
-   (fn [[plan-item bed-area]] 
-     (-> plan-item 
-         un-namespace-keys
-         (assoc :bed-area (un-namespace-keys bed-area))
-         (dissoc :bed-area-id)))
-   
-   (xt/q (xt/db node) '{:find  [(pull ?e [*]) (pull ?eb [*])]
-                        :where [[?e :object/type :plan-item]
-                                [?e :plan-item/bed-area-id bed-area-id]
-
-                                [?eb :xt/id bed-area-id]
-                                [?eb :bed-area/name name]]})))
-
-(defn find-all-items []
-  (xt/q (xt/db node)
-        '{:find   [(pull ?e [*])]
-           :where [[?e :xt/id _]]}))
-
 (comment
-  (find-all-items)
+  (search/find-all-items)
 
   ;; demo use case
   
   (do
+    (require '[repository.search :as search])
     (def node (xt/start-node {}))
     (def seed-instance-1 {:name "Atlanta"
                           :type "Porree"
@@ -116,7 +89,7 @@
                       :succession-number 1}) 
     (def plan-item-1-id (put-data plan-item-1 :plan-item))
     (get-data-by-id plan-item-1-id)
-    (prn (first (find-all-plan-items))))
+    (prn (first (search/find-all-plan-items node))))
     ;; => 
     ;; {:group-of-plants-id      "afd77f00-01e6-4c9d-aefa-51b18f7faa77"
     ;;  :type                    :plan-item
