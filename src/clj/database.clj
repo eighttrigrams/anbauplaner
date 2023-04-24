@@ -33,10 +33,10 @@
          (fn [[k _v]]
            (= (name ns') (namespace k))) m)))
 
-(defn- find-existing [ns' m]
-  "Tries to find a record which has exactly the values
+(defn- find-existing "Tries to find a record which has exactly the values
    as specified by the map `m`, but only for the keywords
    namespaced given by `ns'`"
+  [ns' m]
   (find-existing' (symbol ns') (retain ns' m)))
 
 (defn- put-data
@@ -73,7 +73,7 @@
      (-> plan-item 
          un-namespace-keys
          (assoc :bed-area (un-namespace-keys bed-area))
-         (dissoc :bed-area-id))
+         (dissoc :bed-area-id)))
    
    (xt/q (xt/db node) '{:find  [(pull ?e [*]) (pull ?eb [*])]
                         :where [[?e :object/type :plan-item]
@@ -81,7 +81,7 @@
                                 [?e :plan-item/bed-area-id bed-area-id]
 
                                 [?eb :xt/id bed-area-id]
-                                [?eb :bed-area/name name]]}))))
+                                [?eb :bed-area/name name]]})))
 
 (defn find-all-items []
   (xt/q (xt/db node)
