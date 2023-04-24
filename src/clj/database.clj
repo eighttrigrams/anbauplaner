@@ -1,93 +1,62 @@
 (ns database
   (:require [clojure.spec.alpha :as s]
-            [xtdb.api :as xt]))
+            [xtdb.api :as xt]
+            [model :refer :all]))
 
 (defonce node (xt/start-node {}))
 
-(defn- put-data
-  [data spec]
-  (when-not (s/valid? spec (dissoc data :object/type))
-    (throw (ex-info "not valid" (s/explain-data spec (dissoc data :object/type)))))
-  (let [uuid (.toString (java.util.UUID/randomUUID))]
-    (xt/submit-tx node
-                  [[::xt/put (merge {:xt/id uuid}
-                                    data)]])
-    (xt/sync node)
-    uuid))
+(defn dbg [%] (do (prn %) %))
 
-(s/def ::name string?)
-(s/def ::type string?)
-(s/def ::stability string?)
-(s/def ::manufacturer string?)
+;; from https://stackoverflow.com/a/43722784
+(defn map->nsmap
+  [m n]
+  (reduce-kv (fn [acc k v]
+               (let [new-kw (if (and (keyword? k)
+                                     (not (qualified-keyword? k)))
+                              (keyword (str n) (name k))
+                              k)]
+                 (assoc acc new-kw v)))
+             {} m))
 
-(s/def ::seed-instance (s/keys :req-un [::name ::type ::stability ::manufacturer]))
+(defn- convert-to-vec-of-vecs [symb args]
+  (mapv #(do [symb % (% args)]) (keys args)))
 
-(defn find-existing-seed-instance
-  [{:keys [name type stability manufacturer]}]
+(defn- find-existing'
+  [symb m]
   (xt/q (xt/db node)
-        '{:find  [seed-instance]
-          :where [[seed-instance :name name]
-                  [seed-instance :type type]
-                  [seed-instance :stability stability]
-                  [seed-instance :manufacturer manufacturer]]
-          :in [name type stability manufacturer]}
-        name type stability manufacturer))
+        {:find  [symb]
+         :where (convert-to-vec-of-vecs symb m)}))
 
-(defn put-seed-instance 
-  "This entity describes a single specific instance
-   of a seed, as purchased from a manufacturer"
-  [data] 
-  (let [existing-seed-instance (find-existing-seed-instance data)]
-    (if (seq existing-seed-instance)
-      (ffirst existing-seed-instance)
-      (put-data (assoc data :object/type :seed-instance) ::seed-instance))))
+(defn- retain [ns' m]
+  (into {} 
+        (filter 
+         (fn [[k _v]]
+           (= (name ns') (namespace k))) m)))
+
+(defn- find-existing [ns' m]
+  "Tries to find a record which has exactly the values
+   as specified by the map `m`, but only for the keywords
+   namespaced given by `ns'`"
+  (find-existing' (symbol ns') (retain ns' m)))
+
+(defn- put-data
+  [data spec ns']
+  (let [data (map->nsmap data (symbol ns'))]
+    (when-not (s/valid? spec data)
+      (throw (ex-info "not valid" (s/explain-data spec data))))
+    (let [existing-instance (find-existing ns' data)]
+      (if (seq existing-instance)
+        (ffirst existing-instance)
+        (let [uuid (.toString (java.util.UUID/randomUUID))
+              data (assoc data :object/type ns')]
+          (xt/submit-tx node
+                        [[::xt/put (merge {:xt/id uuid}
+                                          data)]])
+          (xt/sync node)
+          uuid)))))
 
 (defn get-data-by-id [id]
   (xt/entity (xt/db node) id))
-
-(s/def ::seed-instance-id string?)
-(s/def ::amount int?)
-(s/def ::seeding-date string?) ;; TODO convert to date
-
-(s/def ::group-of-plants (s/keys :req-un 
-                                 [::seed-instance-id
-                                  ::seeding-date
-                                  ::amount]))
-
-(defn put-group-of-plants
-  "A group of plants grown from a specific seed instance
-   at a given seeding date"
-  [data]
-  (put-data (assoc data :object/type :group-of-plants) ::group-of-plants))
-
-(s/def ::name string?)
-(s/def ::x-begin int?)
-(s/def ::x-end int?)
-
-(s/def ::bed-area (s/keys :req-un [::name ::x-begin ::x-end]))
-
-(defn put-bed-area
-  [data]
-  (put-data (assoc data :object/type :bed-area) ::bed-area))
-
-(s/def ::group-of-plants-id string?)
-(s/def ::bed-area-id string?)
-(s/def ::planned-seeding-date string?) ;; TODO convert to dates
-(s/def ::planned-planting-date string?)
-(s/def ::planned-harvesting-date string?)
-(s/def ::succession-number int?) 
-
-;; per season
-(s/def ::plan-item (s/keys :req-un [::group-of-plants-id
-                                    ::bed-area-id
-                                    ::planned-seeding-date
-                                    ::planned-planting-date
-                                    ::planned-harvesting-date
-                                    ;; can possibly be calculated based upon planting date
-                                    ::succession-number]))
-(defn put-plan-item
-  [data]
-  (put-data (assoc data :object/type :plan-item) ::plan-item))
 
 (defn find-all-plan-items
   []
@@ -110,8 +79,13 @@
                                 [?eb :xt/id bed-area-id]
                                 [?eb :name name]]})))
 
+(defn find-all-items []
+  (xt/q (xt/db node)
+        '{:find   [(pull ?e [*])]
+           :where [[?e :xt/id _]]}))
+
 (comment
-  
+  (find-all-items)
   (find-all-plan-items)
 
   ;; demo use case
@@ -122,21 +96,32 @@
                           :type "Porree"
                           :stability ""
                           :manufacturer "Dürr"})
-    (def seed-instance-1-id (put-seed-instance seed-instance-1))
+    (def seed-instance-1-id (put-data seed-instance-1 
+                                      :seed-instance/spec 
+                                      :seed-instance))
     (def group-of-plants-1 {:seed-instance-id seed-instance-1-id
                             :seeding-date "2023-05-05"
                             :amount 5})
-    (def group-of-plants-1-id (put-group-of-plants group-of-plants-1))
-    (def bed-area-1 {:name "Beet1" :x-begin 0 :x-end 1})
-    (def bed-area-1-id (put-bed-area bed-area-1))
+    (def group-of-plants-1-id (put-data group-of-plants-1
+                                        :group-of-plants/spec
+                                        :group-of-plants))
+    (def bed-area-1 {:name "Beet1"
+                     :x-begin 0 
+                     :x-end 1})
+    (def bed-area-1-id (put-data bed-area-1
+                                 :bed-area/spec
+                                 :bed-area))
     (def plan-item-1 {:group-of-plants-id group-of-plants-1-id
                       :bed-area-id bed-area-1-id
                       :planned-seeding-date "2023-01-02"
                       :planned-planting-date "2023-05-08"
                       :planned-harvesting-date "2023-09-18"
                       :succession-number 1}) 
-    (def plan-item-1-id (put-plan-item plan-item-1))
-    (get-data-by-id plan-item-1-id))
+    (def plan-item-1-id (put-data plan-item-1
+                                  :plan-item/spec
+                                  :plan-item))
+    (get-data-by-id plan-item-1-id)
+    (find-all-items))
 
   ;; demo use case end
 
