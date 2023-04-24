@@ -33,7 +33,8 @@
          (fn [[k _v]]
            (= (name ns') (namespace k))) m)))
 
-(defn- find-existing "Tries to find a record which has exactly the values
+(defn- find-existing 
+  "Tries to find a record which has exactly the values
    as specified by the map `m`, but only for the keywords
    namespaced given by `ns'`"
   [ns' m]
@@ -126,8 +127,7 @@
     (get-data-by-id plan-item-1-id)
     (prn (first (find-all-plan-items))))
     ;; => 
-    ;; {:bed-area-id             "0554e698-1192-46ab-9fee-8d5f28f003b1"
-    ;;  :group-of-plants-id      "afd77f00-01e6-4c9d-aefa-51b18f7faa77"
+    ;; {:group-of-plants-id      "afd77f00-01e6-4c9d-aefa-51b18f7faa77"
     ;;  :type                    :plan-item
     ;;  :planned-planting-date   "2023-05-08"
     ;;  :planned-seeding-date    "2023-01-02"
