@@ -41,8 +41,9 @@
   (find-existing' (symbol ns') (retain ns' m)))
 
 (defn- put-data
-  [data spec ns']
-  (let [data (map->nsmap data (symbol ns'))]
+  [data ns']
+  (let [data (map->nsmap data (symbol ns'))
+        spec (keyword (name ns') "spec")]
     (when-not (s/valid? spec data)
       (throw (ex-info "not valid" (s/explain-data spec data))))
     (let [existing-instance (find-existing ns' data)]
@@ -69,7 +70,6 @@
 (defn find-all-plan-items
   []
   (map
-   
    (fn [[plan-item bed-area]] 
      (-> plan-item 
          un-namespace-keys
@@ -99,30 +99,22 @@
                           :type "Porree"
                           :stability ""
                           :manufacturer "Dürr"})
-    (def seed-instance-1-id (put-data seed-instance-1 
-                                      :seed-instance/spec 
-                                      :seed-instance))
+    (def seed-instance-1-id (put-data seed-instance-1 :seed-instance))
     (def group-of-plants-1 {:relation/seed-instance-id seed-instance-1-id
                             :seeding-date "2023-05-05"
                             :amount 5})
-    (def group-of-plants-1-id (put-data group-of-plants-1
-                                        :group-of-plants/spec
-                                        :group-of-plants))
+    (def group-of-plants-1-id (put-data group-of-plants-1 :group-of-plants))
     (def bed-area-1 {:name "Beet1"
                      :x-begin 0 
                      :x-end 1})
-    (def bed-area-1-id (put-data bed-area-1
-                                 :bed-area/spec
-                                 :bed-area))
+    (def bed-area-1-id (put-data bed-area-1 :bed-area))
     (def plan-item-1 {:relation/group-of-plants-id group-of-plants-1-id
                       :bed-area-id bed-area-1-id
                       :planned-seeding-date "2023-01-02"
                       :planned-planting-date "2023-05-08"
                       :planned-harvesting-date "2023-09-18"
                       :succession-number 1}) 
-    (def plan-item-1-id (put-data plan-item-1
-                                  :plan-item/spec
-                                  :plan-item))
+    (def plan-item-1-id (put-data plan-item-1 :plan-item))
     (get-data-by-id plan-item-1-id)
     (prn (first (find-all-plan-items))))
     ;; => 
