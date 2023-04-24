@@ -58,26 +58,30 @@
 (defn get-data-by-id [id]
   (xt/entity (xt/db node) id))
 
+(defn- un-namespace-keys
+  [m]
+  (into {}
+        (map (fn [[k v]]
+               [(keyword (name k)) v])
+             m)))
+
 (defn find-all-plan-items
   []
   (map
    
-   (fn [[id
-         planned-seeding-date
-         bed-area-id
-         name]]
-     {:planned-seeding-date planned-seeding-date
-      :id id
-      :bed-area/id bed-area-id
-      :bed-area/name name})
+   (fn [[plan-item bed-area]] 
+     (-> plan-item 
+         un-namespace-keys
+         (assoc :bed-area (un-namespace-keys bed-area))
+         (dissoc :bed-area-id))
    
-   (xt/q (xt/db node) '{:find  [?e planned-seeding-date ?eb name]
+   (xt/q (xt/db node) '{:find  [(pull ?e [*]) (pull ?eb [*])]
                         :where [[?e :object/type :plan-item]
-                                [?e :planned-seeding-date planned-seeding-date]
-                                [?e :bed-area-id bed-area-id]
+                                [?e :plan-item/planned-seeding-date planned-seeding-date]
+                                [?e :plan-item/bed-area-id bed-area-id]
 
                                 [?eb :xt/id bed-area-id]
-                                [?eb :name name]]})))
+                                [?eb :bed-area/name name]]}))))
 
 (defn find-all-items []
   (xt/q (xt/db node)
@@ -86,10 +90,9 @@
 
 (comment
   (find-all-items)
-  (find-all-plan-items)
 
   ;; demo use case
-
+  
   (do
     (def node (xt/start-node {}))
     (def seed-instance-1 {:name "Atlanta"
@@ -121,10 +124,21 @@
                                   :plan-item/spec
                                   :plan-item))
     (get-data-by-id plan-item-1-id)
-    (find-all-items))
-
+    (prn (first (find-all-plan-items))))
+    ;; => 
+    ;; {:bed-area-id             "0554e698-1192-46ab-9fee-8d5f28f003b1"
+    ;;  :group-of-plants-id      "afd77f00-01e6-4c9d-aefa-51b18f7faa77"
+    ;;  :type                    :plan-item
+    ;;  :planned-planting-date   "2023-05-08"
+    ;;  :planned-seeding-date    "2023-01-02"
+    ;;  :bed-area                {:name    "Beet1"
+                              ;;  :x-begin 0
+                              ;;  :x-end   1
+                              ;;  :type    :bed-area
+                              ;;  :id      "0554e698-1192-46ab-9fee-8d5f28f003b1"}
+    ;;  :id                      "2936b058-e9e6-4824-9c0c-5349226206c9"
+    ;;  :succession-number       1
+    ;;  :planned-harvesting-date "2023-09-18"}
+  
   ;; demo use case end
-
-  (get-data-by-id seed-instance-id)
-
-  )
+)
