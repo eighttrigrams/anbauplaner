@@ -5,12 +5,12 @@
             [ring.middleware.json :as json]
             [env :refer [wrap-env-defaults]]
             [mount.core :as mount]
-            [repository :as r]
+            [controller :as c]
             dispatch
             [ring.middleware.resource :refer [wrap-resource]]))
 
 (defn api-handler [{{msg :msg} :body}]
-  (tap> [:resources (r/list-resources)])
+  (tap> [:resources (c/list-resources)])
   {:body {:echo msg}})
 
 (defroutes api

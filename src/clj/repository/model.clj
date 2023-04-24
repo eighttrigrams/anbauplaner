@@ -1,4 +1,4 @@
-(ns model
+(ns repository.model
   (:require [clojure.spec.alpha :as s]))
 
 (s/def :seed-instance/name string?)

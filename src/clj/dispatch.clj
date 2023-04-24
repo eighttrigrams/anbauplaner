@@ -1,5 +1,5 @@
 (ns dispatch
   (:require [net.eighttrigrams.defn-over-http.core :refer [defdispatch]]
-            [repository :refer :all]))
+            [controller :refer [list-resources]]))
 
 (defdispatch handler list-resources)
