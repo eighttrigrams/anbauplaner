@@ -78,7 +78,6 @@
    
    (xt/q (xt/db node) '{:find  [(pull ?e [*]) (pull ?eb [*])]
                         :where [[?e :object/type :plan-item]
-                                [?e :plan-item/planned-seeding-date planned-seeding-date]
                                 [?e :plan-item/bed-area-id bed-area-id]
 
                                 [?eb :xt/id bed-area-id]
